@@ -1,0 +1,32 @@
+{
+  "description": "Amostra de referência manual verificada nos PDFs fornecidos, valores normalizados para BRL million",
+  "source_period": "FY2022",
+  "numeric_absolute_tolerance_million": 0.002,
+  "expected": {
+    "light.pdf": {
+      "revenue": {"status": "found", "value": 12107.0, "page": 9},
+      "ebitda": {"status": "found", "value": 1180.0, "page": 9},
+      "net_income": {"status": "found", "value": -5673.0, "page": 10},
+      "net_debt": {"status": "found", "value": 9032.0, "page": 10},
+      "leverage": {"status": "conflict", "page": 10},
+      "operating_cash_flow": {"status": "found", "value": 200.763, "page": 25},
+      "capex": {"status": "found", "value": 1506.0, "page": 10}
+    },
+    "brasal.pdf": {
+      "revenue": {"status": "found", "value": 1325.059, "page": 8},
+      "ebitda": {"status": "not_found"},
+      "net_income": {"status": "found", "value": 174.602, "page": 8},
+      "net_debt": {"status": "not_found"},
+      "leverage": {"status": "not_found"},
+      "operating_cash_flow": {"status": "found", "value": 258.248, "page": 11}
+    },
+    "millet.pdf": {
+      "revenue": {"status": "found", "value": 462.127, "page": 7},
+      "ebitda": {"status": "not_found"},
+      "net_income": {"status": "found", "value": 18.891, "page": 7},
+      "net_debt": {"status": "not_found"},
+      "leverage": {"status": "not_found"},
+      "operating_cash_flow": {"status": "found", "value": 24.799, "page": 10}
+    }
+  }
+}
