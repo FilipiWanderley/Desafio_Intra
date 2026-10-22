@@ -221,3 +221,40 @@ O desafio exige orquestração que produza resultado confiável. Agentes autôno
 ## 12. Discussão técnica
 
 Para a demonstração de **20 minutos + 10 minutos de perguntas**, veja [`docs/defesa-tecnica.md`](docs/defesa-tecnica.md). Os trade-offs e os resultados estão no próprio repositório; nenhuma decisão depende de lógica invisível em notebook.
+
+## Integração validada com GroqCloud
+
+O pipeline também suporta GroqCloud pela API compatível com OpenAI,
+sem modificar a arquitetura de orquestração.
+
+Configuração utilizada na validação:
+
+- Endpoint: `https://api.groq.com/openai/v1`
+- Modelo: `openai/gpt-oss-120b`
+- Orquestração: LangGraph
+- Entrada: os três PDFs do desafio
+- Chave: variável de ambiente `INTRA_OPENAI_API_KEY`
+
+Execução:
+
+```bash
+python -m intra_financial_ai analyze data/input --output outputs --llm
+```
+
+A chave e as demais variáveis do provedor devem ser configuradas
+no ambiente antes de executar o comando.
+
+Na execução `run_b15a8612e219`, o pipeline registrou:
+
+- LLM habilitado: `true`
+- Tokens de entrada: `11606`
+- Tokens de saída: `7488`
+- Golden dataset: 19 amostras, sem falhas
+- Acurácia dos campos e páginas citadas: 1,0 na amostra
+
+Essas métricas não representam precisão de produção.
+O custo em USD não foi calculado porque não foi configurada tarifa.
+
+Gemini permanece como alternativa compatível com o endpoint OpenAI,
+mas não teve inferência validada nesta entrega devido à indisponibilidade
+de cota na conta de teste.
