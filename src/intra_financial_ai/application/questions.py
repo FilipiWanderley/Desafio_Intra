@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from intra_financial_ai.domain.models import (
     QUESTIONS,
@@ -40,15 +40,31 @@ class QuestionAnswerer:
     def _revenue_drivers(reports: list[DocumentResult]) -> Answer:
         parts = []
         evidences: list[Evidence] = []
-        for r in reports:
-            factors = [f for f in r.findings if f.category == "drivers"]
+        for report in reports:
+            factors = [
+                f for f in report.findings if f.category == "drivers"
+            ]
             if factors:
-                parts.append(f"{r.company}: " + "; ".join(f.statement for f in factors))
-                evidences.extend(e for f in factors for e in f.evidence)
+                parts.append(
+                    f"{report.company}: "
+                    + "; ".join(f.statement for f in factors)
+                )
+                evidences.extend(
+                    e for f in factors for e in f.evidence
+                )
             else:
-                parts.append(f"{r.company}: motivo gerencial explícito não encontrado; a DRE comprova números, mas não sua causa.")
-                evidences.extend(r.metrics["revenue"].evidence)
-        return Answer(question=QUESTIONS[1], answer=" ".join(parts), status="partial", evidence=evidences)
+                parts.append(
+                    f"{report.company}: motivo gerencial explícito "
+                    "não identificado entre os achados extraídos; "
+                    "não é possível inferir a causa apenas pelos "
+                    "números da DRE."
+                )
+        return Answer(
+            question=QUESTIONS[1],
+            answer=" ".join(parts),
+            status="partial",
+            evidence=evidences,
+        )
 
     @staticmethod
     def _leverage(reports: list[DocumentResult]) -> Answer:
@@ -62,35 +78,75 @@ class QuestionAnswerer:
     @staticmethod
     def _shared_risks(reports: list[DocumentResult]) -> Answer:
         taxonomy = {
-            "inadimplência e crédito": ("inadimpl", "crédito"),
+            "inadimplência e crédito": ("inadimpl", "crédito", "credito"),
             "taxas de juros": ("juros",),
             "contingências": ("conting",),
         }
         matches = []
         sources: list[Evidence] = []
+
         for label, terms in taxonomy.items():
             members = []
+            label_sources: list[Evidence] = []
             for report in reports:
-                findings = [f for f in report.findings if f.category == "risks" and any(term in f.statement.lower() for term in terms)]
+                findings = [
+                    f for f in report.findings
+                    if f.category == "risks"
+                    and any(t in f.statement.lower() for t in terms)
+                ]
                 if findings:
                     members.append(report.company)
-                    sources.extend(e for f in findings for e in f.evidence)
+                    label_sources.extend(
+                        e for f in findings for e in f.evidence
+                    )
             if len(members) >= 2:
                 matches.append(f"{label} ({', '.join(members)})")
+                sources.extend(label_sources)
+
         if not matches:
-            return Answer(question=QUESTIONS[3], answer="Não foi possível demonstrar, nas evidências classificadas, riscos compartilhados por pelo menos duas empresas.", status="not_found", evidence=_findings(reports, "risks"))
-        return Answer(question=QUESTIONS[3], answer="; ".join(matches) + ".", status="answered", evidence=sources)
+            return Answer(
+                question=QUESTIONS[3],
+                answer=(
+                    "Não foi possível demonstrar, nas evidências "
+                    "classificadas, riscos compartilhados por pelo "
+                    "menos duas empresas."
+                ),
+                status="not_found",
+                evidence=_findings(reports, "risks"),
+            )
+        return Answer(
+            question=QUESTIONS[3],
+            answer="; ".join(matches) + ".",
+            status="answered",
+            evidence=sources,
+        )
 
     @staticmethod
     def _guidance(reports: list[DocumentResult]) -> Answer:
         items = []
         sources: list[Evidence] = []
         for report in reports:
-            prospects = [finding for finding in report.findings if finding.category == "guidance"]
+            prospects = [
+                f for f in report.findings if f.category == "guidance"
+            ]
             if prospects:
-                items.append(f"{report.company}: " + "; ".join(f.statement for f in prospects))
-                sources.extend(e for f in prospects for e in f.evidence)
+                items.append(
+                    f"{report.company}: "
+                    + "; ".join(f.statement for f in prospects)
+                )
+                sources.extend(
+                    e for f in prospects for e in f.evidence
+                )
             else:
-                items.append(f"{report.company}: guidance para o próximo ano não encontrado.")
-                sources.extend(report.metrics["revenue"].evidence)
-        return Answer(question=QUESTIONS[4], answer=" ".join(items), status="partial", evidence=sources)
+                items.append(
+                    f"{report.company}: guidance explícito não "
+                    "identificado entre os achados extraídos; "
+                    "é necessário verificar o relatório antes de "
+                    "concluir que não existe."
+                )
+        return Answer(
+            question=QUESTIONS[4],
+            answer=" ".join(items),
+            status="partial",
+            evidence=sources,
+        )
