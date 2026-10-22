@@ -8,6 +8,8 @@ from intra_financial_ai.infrastructure.pdf_reader import DocumentReader
 
 INPUT = Path(__file__).resolve().parents[1] / "data" / "input"
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.mark.parametrize(
     ("filename", "revenue", "income"),

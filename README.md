@@ -24,7 +24,7 @@ O enunciado requer ingestão de texto/tabelas, JSON por documento com página e 
 
 ## 2. Instalação e execução
 
-Recomendo **Python 3.12**, terminal PowerShell, Git e ambiente virtual. Os três PDFs estão em `data/input/`.
+Recomendo **Python 3.12**, terminal PowerShell, Git e ambiente virtual. Os PDFs reais do desafio devem estar localmente em `data/input/`. Eles são ignorados pelo Git e não são enviados ao repositório.
 
 ### Windows PowerShell
 
@@ -54,6 +54,8 @@ intra-ai analyze data/input --output outputs
 ```
 
 ### Testes e avaliação
+
+O CI executa os testes unitários sem depender dos PDFs reais. Para testar a extração com os documentos do desafio, mantenha os três PDFs em `data/input/` e execute localmente `python -m pytest -q -m integration`. A suíte completa, com `python -m pytest -q`, inclui os testes de integração.
 
 ```bash
 python -m pytest -q

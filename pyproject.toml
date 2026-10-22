@@ -30,6 +30,7 @@ packages = ["src/intra_financial_ai"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = ["integration: requires challenge PDFs in data/input"]
 
 [tool.ruff]
 line-length = 100
