@@ -53,11 +53,17 @@ class OptionalLLMAnalyzer:
         snippets = []
         total = 0
         for _, page in page_candidates:
-            fragment = page.text[:4000]
-            if total + len(fragment) > cap:
+            header = f"[DOCUMENTO={doc.name} PÁGINA={page.number}]\n"
+            available = cap - total - len(header)
+            if available <= 0:
                 break
-            snippets.append(f"[DOCUMENTO={doc.name} PÁGINA={page.number}]\n{fragment}")
-            total += len(fragment)
+            fragment = page.text[:min(4000, available)]
+            if not fragment.strip():
+                continue
+            snippets.append(header + fragment)
+            total += len(header) + len(fragment)
+            if len(fragment) == available:
+                break
         if not snippets:
             return []
         client = OpenAI(api_key=key, base_url=os.getenv("INTRA_OPENAI_BASE_URL") or None, timeout=35.0, max_retries=1)
@@ -76,6 +82,10 @@ class OptionalLLMAnalyzer:
         payload = LLMAnalysis.model_validate(json.loads(response.choices[0].message.content or "{}"))
         findings = []
         for proposed in payload.findings:
+            # Guidance da LLM requer revisao humana.
+            # Preserva o guidance deterministico ja validado.
+            if proposed.category == "guidance":
+                continue
             if not 1 <= proposed.page <= len(doc.pages) or proposed.category not in {"drivers", "risks", "guidance", "events", "tone"}:
                 continue
             text = doc.pages[proposed.page - 1].text
